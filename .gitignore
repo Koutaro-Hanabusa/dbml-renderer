@@ -3,3 +3,5 @@
 /.compare-test-output.html
 /.idea
 /.vscode
+/result
+/result-*
