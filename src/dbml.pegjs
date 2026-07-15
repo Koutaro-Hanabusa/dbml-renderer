@@ -31,9 +31,9 @@ TableSettings = Settings
 
 Column = name:ColumnName _ data:ColumnType _ settings:Settings? { return { type: "column", name, data, settings } }
 ColumnName = Name
-ColumnType = base:(ParameterizedColumnType / QualifiedColumnType / SimpleColumnType) array:("[" _ arg:$[a-zA-Z0-9_,]* _ "]" { return `[${arg}]`; })* { return base + array.join(""); }
+ColumnType = base:(ParameterizedColumnType / QualifiedColumnType / SimpleColumnType) array:("[" _ arg:$[a-zA-Z0-9_,À-￿]* _ "]" { return `[${arg}]`; })* { return base + array.join(""); }
 QualifiedColumnType = schema:Schema _ "." _ simple:SimpleColumnType { return schema + "." + simple }
-SimpleColumnType = QuotedName / $[a-zA-Z0-9_,]+
+SimpleColumnType = QuotedName / $[a-zA-Z0-9_,À-￿]+
 ParameterizedColumnType = outer:SimpleColumnType _ "(" _ args:(head:TypeParameter tail:(_ "," _ entry:TypeParameter { return entry; })* { return [head, ...tail]; } )? _ ")" { return `${outer}(${args.join(",")})`; }
 TypeParameter = ColumnType / String
 
@@ -73,7 +73,9 @@ SchemaAndName = schema:Schema _ "." _ name:Name { return {schema, name}; }
 SimpleName = name:Name { return {schema: null, name}; }
 
 Name = RawName / QuotedName
-RawName = $[a-zA-Z0-9_]+
+// 日本語などの Unicode 識別子 (U+00C0 以上) を許容。ASCII 記号 (< U+00C0) は
+// 除外することで DBML の delimiter (`:`, `[`, ... 全部 ASCII) と衝突しない。
+RawName = $[a-zA-Z0-9_À-￿]+
 QuotedName = '"' content:$[^"\n\r]* '"' { return content; }
 
 String = MultiLineString / SingleQuotedString / DoubleQuotedString
